@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LangGraph ChatBot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #444;
+    }
+    #chat {
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 8px;
+      background-color: #fafafa;
+    }
+    .message {
+      margin: 10px 0;
+    }
+    .user {
+      color: #0b63ce;
+      font-weight: bold;
+    }
+    .bot {
+      color: #27ae60;
+      font-weight: bold;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin-right: 5px;
+    }
+    #input-message {
+      width: 75%;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    #send-btn {
+      width: 20%;
+      background-color: #0b63ce;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #send-btn:hover {
+      background-color: #094e9c;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🤖 LangGraph ChatBot</h1>
+    <div id="chat"></div>
+    <input type="text" id="input-message" placeholder="Type your message..." />
+    <button id="send-btn">Send</button>
+  </div>
+
+  <script>
+    const chatDiv = document.getElementById("chat");
+    const inputMessage = document.getElementById("input-message");
+    const sendBtn = document.getElementById("send-btn");
+
+    const session_id = "user_123";  // Static session ID for now
+
+    function appendMessage(sender, text) {
+      const msg = document.createElement("div");
+      msg.classList.add("message");
+      msg.innerHTML = `<span class="${sender}">${sender === "user" ? "You" : "Bot"}:</span> ${text}`;
+      chatDiv.appendChild(msg);
+      chatDiv.scrollTop = chatDiv.scrollHeight;
+    }
+
+    sendBtn.onclick = async () => {
+      const message = inputMessage.value.trim();
+      if (!message) return;
+
+      appendMessage("user", message);
+      inputMessage.value = "";
+
+      try {
+        const response = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message, session_id }),
+        });
+
+        const data = await response.json();
+        appendMessage("bot", data.response);
+      } catch (err) {
+        appendMessage("bot", "⚠️ Error: Unable to connect to chatbot.");
+        console.error(err);
+      }
+    };
+
+    // Allow "Enter" key to send
+    inputMessage.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") sendBtn.click();
+    });
+  </script>
+</body>
+</html>
